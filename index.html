@@ -258,6 +258,23 @@ function makeCard(src, cap) {
   return card;
 }
 
+// ---------- 预置第九章曲绘 ----------
+const PRESET_COVERS = [
+  ['covers/01_About_The_Universe.jpg', 'About The Universe'],
+  ['covers/02_Implexrough.jpg', 'Implexrough'],
+  ['covers/03_Evanescent.jpg', 'Evanescent'],
+  ['covers/04_Entrance_to_the_Chaos.jpg', 'Entrance to the Chaos'],
+  ['covers/05_Exoplanetary_Mirage.jpg', 'Exoplanetary Mirage'],
+  ['covers/06_True_Home_True_World.jpg', 'True Home, True World (Rework)'],
+  ['covers/07_Ametrine.jpg', 'Ametrine'],
+  ['covers/08_Petrichor.jpg', 'Petrichor'],
+  ['covers/09_Hate.jpg', 'ハテ'],
+  ['covers/10_Desultory_Signals.jpg', 'Desultory Signals'],
+  ['covers/11_Message.jpg', 'Message'],
+  ['covers/12_Happy_Ending.jpg', 'What do you want more than a Happy ending?'],
+];
+for (const [src, cap] of PRESET_COVERS) pool.appendChild(makeCard(src, cap));
+
 // ---------- 拖拽 ----------
 let dragged = null;
 
