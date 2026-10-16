@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>从夯到拉锐评 · Phigros 第九章更新</title>
+<style>
+  :root {
+    --ice-1: rgba(200, 232, 255, 0.12);
+    --ice-2: rgba(170, 218, 255, 0.20);
+    --ice-border: rgba(215, 240, 255, 0.38);
+    --ice-glow: rgba(160, 215, 255, 0.55);
+    --text-main: #f2faff;
+    --text-dim: #bcdcf2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    font-family: "STXinwei", "华文新宋", "STSong", serif;
+    color: var(--text-main);
+    background:
+      radial-gradient(ellipse at 18% 8%, rgba(255, 255, 255, 0.85), transparent 50%),
+      radial-gradient(ellipse at 85% 20%, rgba(200, 235, 255, 0.55), transparent 55%),
+      radial-gradient(ellipse at 85% 90%, rgba(140, 200, 250, 0.45), transparent 55%),
+      linear-gradient(165deg, #ffffff 0%, #eaf5fd 30%, #cde8fa 60%, #a8d4f2 85%, #8ec6ec 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* 冰晶漂浮背景 */
+  .crystal {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    color: rgba(255, 255, 255, 0.55);
+    animation: float 12s ease-in-out infinite;
+    text-shadow: 0 0 18px var(--ice-glow);
+    user-select: none;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-28px) rotate(12deg); }
+  }
+
+  header {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 42px 20px 22px;
+  }
+  header h1 {
+    font-size: clamp(26px, 4.5vw, 44px);
+    letter-spacing: 4px;
+    background: linear-gradient(180deg, #1a5a8f 0%, #2e7fc4 60%, #4aa8e8 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 26px rgba(140, 200, 255, 0.5);
+    filter: drop-shadow(0 2px 6px rgba(255, 255, 255, 0.8));
+  }
+
+  main { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 16px 20px 60px; }
+
+  /* 工具栏 */
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: center;
+    margin-bottom: 22px;
+  }
+  .btn {
+    cursor: pointer;
+    padding: 11px 24px;
+    border-radius: 14px;
+    border: 1px solid var(--ice-border);
+    background: linear-gradient(135deg, rgba(255,255,255,.32), rgba(255,255,255,.12));
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    color: #1d4a73;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 1px;
+    transition: all .25s;
+    box-shadow: 0 4px 18px rgba(90, 150, 210, 0.25), inset 0 1px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(255,255,255,.15);
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 26px rgba(120, 190, 250, 0.5), inset 0 1px 0 rgba(255,255,255,.7); }
+  .btn.danger { background: linear-gradient(135deg, rgba(255,225,235,.45), rgba(255,190,205,.22)); border-color: rgba(255,235,240,.55); color: #8a2f47; }
+
+  /* 待分配区 */
+  .pool-wrap {
+    margin-bottom: 22px;
+    border-radius: 18px;
+    border: 1px dashed rgba(255,255,255,.5);
+    background: linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+    backdrop-filter: blur(16px) saturate(1.4);
+    -webkit-backdrop-filter: blur(16px) saturate(1.4);
+    padding: 14px;
+    box-shadow: 0 6px 24px rgba(100,160,220,.2), inset 0 1px 0 rgba(255,255,255,.5);
+  }
+  .pool-wrap h2 { font-size: 15px; color: #2a5a86; margin-bottom: 10px; letter-spacing: 2px; font-weight: 600; }
+  .pool { display: flex; flex-wrap: wrap; gap: 10px; min-height: 96px; align-items: center; }
+
+
+  /* 评级表格 */
+  .tiers { display: flex; flex-direction: column; gap: 12px; }
+  .tier-row {
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.45);
+    backdrop-filter: blur(18px) saturate(1.5);
+    -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    background: linear-gradient(135deg, rgba(255,255,255,.20), rgba(255,255,255,.06));
+    box-shadow: 0 6px 24px rgba(100, 160, 220, 0.22), inset 0 1px 0 rgba(255,255,255,.55), inset 0 -1px 0 rgba(255,255,255,.12);
+    transition: box-shadow .2s;
+  }
+  .tier-row.dragover { box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 6px 30px rgba(150,210,255,.6); }
+  .tier-label {
+    flex: 0 0 120px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 12px 8px;
+    text-align: center;
+    border-right: 1px solid rgba(255,255,255,.4);
+    text-shadow: 0 1px 6px rgba(255,255,255,.5);
+  }
+  .tier-label b { font-size: 24px; letter-spacing: 2px; color: #173f63; }
+  .tier-drop { flex: 1; display: flex; flex-wrap: wrap; gap: 10px; padding: 12px; min-height: 96px; align-content: flex-start; }
+
+  /* 各档颜色（透亮冰蓝玻璃） */
+  .t0 .tier-label { background: linear-gradient(160deg, rgba(190,240,255,.75), rgba(120,210,255,.5)); }
+  .t1 .tier-label { background: linear-gradient(160deg, rgba(185,225,255,.65), rgba(130,195,250,.45)); }
+  .t2 .tier-label { background: linear-gradient(160deg, rgba(190,215,255,.58), rgba(145,185,245,.40)); }
+  .t3 .tier-label { background: linear-gradient(160deg, rgba(200,212,245,.50), rgba(160,175,230,.35)); }
+  .t4 .tier-label { background: linear-gradient(160deg, rgba(210,215,235,.45), rgba(175,180,215,.32)); }
+
+  /* 卡片 */
+  .card {
+    position: relative;
+    width: 88px; height: 88px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: grab;
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow: 0 4px 14px rgba(90,150,210,.35), inset 0 1px 0 rgba(255,255,255,.6);
+    transition: transform .18s, box-shadow .18s;
+    background: rgba(255,255,255,.3);
+  }
+  .card:hover { transform: scale(1.07); box-shadow: 0 8px 22px rgba(140,200,255,.6); z-index: 5; }
+  .card:active { cursor: grabbing; }
+  .card img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .card .cap {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    font-size: 10px; padding: 2px 4px;
+    background: linear-gradient(transparent, rgba(70,130,190,.8));
+    color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-align: center;
+  }
+  .card .del {
+    position: absolute; top: 3px; right: 3px;
+    width: 18px; height: 18px; line-height: 16px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.85); border: 1px solid rgba(240,140,160,.7);
+    color: #d24d6d; font-size: 12px; text-align: center;
+    opacity: 0; transition: opacity .15s; cursor: pointer;
+  }
+  .card:hover .del { opacity: 1; }
+  .card.dragging { opacity: .45; transform: scale(.92) rotate(3deg); }
+
+  @media (max-width: 560px) {
+    .tier-label { flex: 0 0 78px; }
+    .tier-label b { font-size: 18px; }
+    .card { width: 68px; height: 68px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 冰晶装饰 -->
+<span class="crystal" style="top:8%;left:6%;font-size:34px;animation-delay:0s">❄</span>
+<span class="crystal" style="top:16%;right:9%;font-size:26px;animation-delay:2s">❅</span>
+<span class="crystal" style="top:58%;left:3%;font-size:22px;animation-delay:4s">❆</span>
+<span class="crystal" style="top:72%;right:5%;font-size:38px;animation-delay:1s">❄</span>
+<span class="crystal" style="top:40%;right:16%;font-size:18px;animation-delay:3s">✦</span>
+<span class="crystal" style="top:30%;left:18%;font-size:20px;animation-delay:5s">✧</span>
+
+<header>
+  <h1>❄ 从夯到拉锐评 Phigros 第九章更新 ❄</h1>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button class="btn" id="uploadBtn">上传图片</button>
+    <input type="file" id="fileInput" accept="image/*" multiple hidden>
+    <button class="btn" id="resetBtn">回收</button>
+    <button class="btn danger" id="clearBtn">🗑 清空全部</button>
+  </div>
+
+  <div class="pool-wrap">
+    <div class="pool empty" id="pool"></div>
+  </div>
+
+  <div class="tiers" id="tiers"></div>
+</main>
+
+<script>
+const TIER_DEFS = [
+  { cls: 't0', name: '夯' },
+  { cls: 't1', name: '顶级' },
+  { cls: 't2', name: '人上人' },
+  { cls: 't3', name: 'NPC' },
+  { cls: 't4', name: '拉完了' },
+];
+
+const pool = document.getElementById('pool');
+const tiersEl = document.getElementById('tiers');
+const fileInput = document.getElementById('fileInput');
+
+// 构建评级行
+for (const t of TIER_DEFS) {
+  const row = document.createElement('div');
+  row.className = 'tier-row ' + t.cls;
+  row.innerHTML = `
+    <div class="tier-label"><b>${t.name}</b></div>
+    <div class="tier-drop"></div>`;
+  tiersEl.appendChild(row);
+}
+
+// ---------- 上传 ----------
+document.getElementById('uploadBtn').onclick = () => fileInput.click();
+fileInput.onchange = e => {
+  for (const f of e.target.files) {
+    if (!f.type.startsWith('image/')) continue;
+    const reader = new FileReader();
+    reader.onload = ev => pool.appendChild(makeCard(ev.target.result, f.name.replace(/\.[^.]+$/, '')));
+    reader.readAsDataURL(f);
+  }
+  fileInput.value = '';
+};
+
+function makeCard(src, cap) {
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.draggable = true;
+  card.innerHTML = `<img src="${src}" alt=""><div class="cap">${cap}</div><div class="del" title="删除">×</div>`;
+  card.querySelector('.del').onclick = ev => { ev.stopPropagation(); card.remove(); refreshPoolHint(); };
+  card.addEventListener('dragstart', ev => {
+    dragged = card;
+    card.classList.add('dragging');
+    ev.dataTransfer.effectAllowed = 'move';
+    try { ev.dataTransfer.setData('text/plain', ''); } catch {}
+  });
+  card.addEventListener('dragend', () => {
+    card.classList.remove('dragging');
+    dragged = null;
+    document.querySelectorAll('.tier-row.dragover,.pool.dragover').forEach(el => el.classList.remove('dragover'));
+    refreshPoolHint();
+  });
+  refreshPoolHint();
+  return card;
+}
+
+// ---------- 拖拽 ----------
+let dragged = null;
+
+function bindDrop(zone, highlightRow) {
+  zone.addEventListener('dragover', ev => {
+    ev.preventDefault();
+    ev.dataTransfer.dropEffect = 'move';
+    if (highlightRow) highlightRow.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', () => highlightRow && highlightRow.classList.remove('dragover'));
+  zone.addEventListener('drop', ev => {
+    ev.preventDefault();
+    if (highlightRow) highlightRow.classList.remove('dragover');
+    if (!dragged) return;
+    // 支持插到某张卡片前
+    const after = [...zone.querySelectorAll('.card')].find(c => {
+      const r = c.getBoundingClientRect();
+      return ev.clientX < r.left + r.width / 2 && Math.abs(ev.clientY - (r.top + r.height/2)) < r.height;
+    });
+    after ? zone.insertBefore(dragged, after) : zone.appendChild(dragged);
+    refreshPoolHint();
+  });
+}
+
+bindDrop(pool, pool);
+document.querySelectorAll('.tier-row').forEach(row => bindDrop(row.querySelector('.tier-drop'), row));
+
+function refreshPoolHint() {
+  pool.classList.toggle('empty', pool.querySelectorAll('.card').length === 0);
+}
+
+// ---------- 工具按钮 ----------
+document.getElementById('resetBtn').onclick = () => {
+  document.querySelectorAll('.tier-drop .card').forEach(c => pool.appendChild(c));
+  refreshPoolHint();
+};
+document.getElementById('clearBtn').onclick = () => {
+  if (confirm('确定清空所有图片吗？')) {
+    document.querySelectorAll('.card').forEach(c => c.remove());
+    refreshPoolHint();
+  }
+};
+</script>
+</body>
+</html>
